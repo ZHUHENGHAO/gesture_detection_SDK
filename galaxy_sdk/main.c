@@ -29,29 +29,25 @@
 #include "hal_imu.h"
 #include "main.h"
 
-#define IMU_TIMER_PERIOD_MS 20
-
 static ImuDevice *g_imu_dev = NULL;
 static OsalSemaphore *g_imu_data_sem = NULL;
 
 static void imu_data_ready_isr(void)
 {
+    /* Signal the task to read FIFO data.
+     * Note: per SDK manual 4.3.3, after reading FIFO data the task loop must
+     * call hal_imu_enable_interrupt to re-arm the interrupt, otherwise no
+     * further interrupt will fire. */
     if (g_imu_data_sem != NULL) {
         osal_sem_post_isr(g_imu_data_sem);
     }
-}
-
-static void imu_timer_callback(OsalTimer *timer, void *param)
-{
-    (void)timer;
-    (void)param;
-    imu_data_ready_isr();
 }
 
 static void task_imu_interrupt(void *param)
 {
     (void)param;
 
+    /* Step 1: Get IMU device */
     g_imu_dev = hal_imu_get_device(IMU_DEV_ID_0);
     if (g_imu_dev == NULL) {
         uart_printf("[IMU] hal_imu_get_device failed\r\n");
@@ -59,7 +55,7 @@ static void task_imu_interrupt(void *param)
         return;
     }
 
-    /* Step 1: Power on */
+    /* Step 2: Power on */
     int ret = hal_imu_enable_power(g_imu_dev, true);
     if (ret != VSD_SUCCESS) {
         uart_printf("[IMU] enable power failed: %d\r\n", ret);
@@ -67,7 +63,7 @@ static void task_imu_interrupt(void *param)
         return;
     }
 
-    /* Step 2: Initialize IMU device driver */
+    /* Step 3: Initialize IMU device driver */
     ret = hal_imu_init(g_imu_dev);
     if (ret != VSD_SUCCESS) {
         uart_printf("[IMU] hal_imu_init failed: %d\r\n", ret);
@@ -75,7 +71,18 @@ static void task_imu_interrupt(void *param)
         return;
     }
 
-    /* Step 3: Set default range and bandwidth */
+    /*
+     * Step 4: Set sensor default config.
+     * QEMU simulator hardcodes FIFO parsing to expect specific shadow values:
+     *   accel BWP=7  -> accel_cfg[7:6]=0xC0 (required by FIFO parser entry check)
+     *   accel range=8 -> accel_cfg[3:0]=0x8
+     *   gyro  BWP=7  -> gyro_bwp=7
+     *   gyro  range=7 -> gyro_range=7
+     *   gyro  ODR=5  -> gyro_odr=5 (50Hz)
+     *   accel ODR=5  -> accel_odr=5 (50Hz)
+     * set_sensor_default_cfg() produces exactly these values.
+     * Skipping this step and configuring from scratch will fail at FIFO parse time.
+     */
     ret = hal_imu_set_sensor_default_cfg(g_imu_dev);
     if (ret != VSD_SUCCESS) {
         uart_printf("[IMU] hal_imu_set_sensor_default_cfg failed: %d\r\n", ret);
@@ -84,42 +91,60 @@ static void task_imu_interrupt(void *param)
     }
 
     /*
-     * Step 4: Set ODR to 50Hz (REQUIRED by simulator before normal mode).
-     *   range = 2  -> ±2G  (accelerometer)
-     *   range = 250 -> ±250 dps (gyroscope)
-     *   bwp   = 2  -> normal mode bandwidth
-     *   odr   = 50 -> 50 Hz output data rate
+     * Step 5: Override accel ODR shadow from 5 → 7.
+     * set_sensor_default_cfg() writes accel ODR = 5 at shadow offset 10,
+     * but bmi160_set_normal_mode(mode=3) requires accel ODR = 7.
+     * hal_imu_set_accel_cfg(..., IMU_SENSOR_ODR) sets shadow offset 10 = 7.
+     * Also set gyro ODR explicitly to 7 via hal_imu_set_gyro_cfg,
+     * since bmi160_set_normal_mode(mode=3) checks gyro shadow offsets.
+     * Do NOT set range or BWP — they are hardcoded by the FIFO parser.
      */
-    ret = hal_imu_set_accel_cfg(g_imu_dev, 2, 2, 50, IMU_SENSOR_ODR);
+    ret = hal_imu_set_accel_cfg(g_imu_dev, 0, 0, 50, IMU_SENSOR_ODR);
     if (ret != VSD_SUCCESS) {
         uart_printf("[IMU] hal_imu_set_accel_cfg(ODR) failed: %d\r\n", ret);
         osal_delete_task(NULL);
         return;
     }
 
-    ret = hal_imu_set_gyro_cfg(g_imu_dev, 250, 2, 50, IMU_SENSOR_ODR);
+    ret = hal_imu_set_gyro_cfg(g_imu_dev, 0, 0, 50, IMU_SENSOR_ODR);
     if (ret != VSD_SUCCESS) {
         uart_printf("[IMU] hal_imu_set_gyro_cfg(ODR) failed: %d\r\n", ret);
         osal_delete_task(NULL);
         return;
     }
 
-    /* Step 5: Switch to normal mode (now ODR is configured, this will succeed) */
-    ret = hal_imu_set_work_mode(g_imu_dev, IMU_ACCEL_GYRO, IMU_SEN_MODE_NORMAL);
+    /* Step 6: Config interrupt — FIFO watermark interrupt on INT1 pin */
+    IMUInterruptPinSetting pin_cfg = {
+        .output_en   = 1,
+        .output_mode = 0,  /* push-pull */
+        .output_type = 0,  /* active low */
+        .edge_ctrl   = 0,  /* level trigger */
+        .input_en    = 0,
+    };
+
+    IMUInterruptSetting irq_cfg = {
+        .irq_channel   = IMU_DATA_PIN,
+        .irq_type      = IMU_ACC_GYRO_FIFO_WATERMARK_INTERRUPT,
+        .irq_pin_settg = pin_cfg,
+        .fifo_full_irq_en = 0,
+        .fifo_wtm_irq_en  = 1,
+    };
+    ret = hal_imu_cfg_interrupt(g_imu_dev, true, IMU_ACC_GYRO_FIFO_WATERMARK_INTERRUPT, &irq_cfg);
     if (ret != VSD_SUCCESS) {
-        uart_printf("[IMU] hal_imu_set_work_mode failed: %d\r\n", ret);
+        uart_printf("[IMU] hal_imu_cfg_interrupt failed: %d\r\n", ret);
         osal_delete_task(NULL);
         return;
     }
 
-    /* Step 6: Configure FIFO */
-    ret = hal_imu_set_fifo_wm(g_imu_dev, FIFO_WATERMARK_LEVEL);
+    /* Step 7: Set FIFO watermark level (bytes) — must match accel+gyro frame size */
+    ret = hal_imu_set_fifo_wm(g_imu_dev, 49);
     if (ret != VSD_SUCCESS) {
         uart_printf("[IMU] hal_imu_set_fifo_wm failed: %d\r\n", ret);
         osal_delete_task(NULL);
         return;
     }
 
+    /* Step 8: Config FIFO data format — gyro + accel */
     ret = hal_imu_set_fifo_cfg(g_imu_dev, IMU_FIFO_GYRO | IMU_FIFO_ACCEL, true);
     if (ret != VSD_SUCCESS) {
         uart_printf("[IMU] hal_imu_set_fifo_cfg failed: %d\r\n", ret);
@@ -127,6 +152,7 @@ static void task_imu_interrupt(void *param)
         return;
     }
 
+    /* Step 9: Flush FIFO — discard stale data before entering normal mode */
     ret = hal_imu_flush_fifo(g_imu_dev);
     if (ret != VSD_SUCCESS) {
         uart_printf("[IMU] hal_imu_flush_fifo failed: %d\r\n", ret);
@@ -134,14 +160,15 @@ static void task_imu_interrupt(void *param)
         return;
     }
 
-    /* Step 7: Configure interrupt */
-    ret = hal_imu_cfg_interrupt(g_imu_dev, true, IMU_ACC_GYRO_FIFO_WATERMARK_INTERRUPT, NULL);
+    /* Step 10: Switch to normal mode — MUST be last, after all config is done */
+    ret = hal_imu_set_work_mode(g_imu_dev, IMU_ACCEL_GYRO, IMU_SEN_MODE_NORMAL);
     if (ret != VSD_SUCCESS) {
-        uart_printf("[IMU] hal_imu_cfg_interrupt failed: %d\r\n", ret);
+        uart_printf("[IMU] hal_imu_set_work_mode failed: %d\r\n", ret);
         osal_delete_task(NULL);
         return;
     }
 
+    /* Step 11: Enable data ready interrupt and register callback */
     ret = hal_imu_enable_interrupt(g_imu_dev, IMU_DATA_PIN, true, imu_data_ready_isr);
     if (ret != VSD_SUCCESS) {
         uart_printf("[IMU] hal_imu_enable_interrupt failed: %d\r\n", ret);
@@ -149,28 +176,9 @@ static void task_imu_interrupt(void *param)
         return;
     }
 
-    /* Step 8: Start a 20ms software timer to simulate hardware data-ready interrupt */
-    OsalTimer *imu_timer = NULL;
-    ret = osal_timer_create(&imu_timer, "imu_timer", IMU_TIMER_PERIOD_MS, true,
-                            imu_timer_callback, NULL);
-    if (ret != OSAL_SUCCESS) {
-        uart_printf("[IMU] osal_timer_create failed: %d\r\n", ret);
-        osal_delete_task(NULL);
-        return;
-    }
+    uart_printf("[IMU] Data-ready interrupt initialized, waiting for data...\r\n");
 
-    ret = osal_timer_start(imu_timer, OSAL_WAIT_FOREVER);
-    if (ret != OSAL_SUCCESS) {
-        uart_printf("[IMU] osal_timer_start failed: %d\r\n", ret);
-        osal_timer_delete(imu_timer, OSAL_WAIT_FOREVER);
-        osal_delete_task(NULL);
-        return;
-    }
-
-    uart_printf("[IMU] Interrupt mode initialized (period=%dms), waiting for data...\r\n",
-                IMU_TIMER_PERIOD_MS);
-
-    /* Step 9: Task-level interrupt-driven loop */
+    /* Step 12: Task-level interrupt-driven loop */
     ImuGyroAccelData gyro_accel_data[64];
     uint16_t frame_count = 0;
 
@@ -196,12 +204,16 @@ static void task_imu_interrupt(void *param)
             }
         }
 
+        /* Per SDK manual 4.3.3: re-arm the interrupt after reading FIFO data,
+         * otherwise no further interrupt will fire for the next data batch. */
         hal_imu_enable_interrupt(g_imu_dev, IMU_DATA_PIN, true, imu_data_ready_isr);
     }
 }
 
 static void task_init_app(void *param)
 {
+    (void)param;
+
     int ret;
     BoardDevice board_dev;
 
