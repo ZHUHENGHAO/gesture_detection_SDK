@@ -81,6 +81,8 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/galaxy_sdk}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/galaxy_sdk/bsp/include/arch/riscv/n309}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/galaxy_sdk/bsp/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/galaxy_sdk/algorithm}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/galaxy_sdk/tasks}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/galaxy_sdk/config/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/galaxy_sdk/drivers/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/galaxy_sdk/modules/external/riscv_dsp/include}&quot;"/>

@@ -15,16 +15,16 @@
  * specific prior written permission.
  */
 
-#ifndef MAIN_H
-#define MAIN_H
+#ifndef APP_H
+#define APP_H
 
 #include <stdint.h>
-#include "hal_imu.h"
-#include "osal.h"
 
-extern ImuDevice *g_imu_dev;
-extern OsalSemaphore *g_imu_data_sem;
+#define EVENT_ALGO_PROCESS  (1U)
 
-void imu_data_ready_isr(void);
+void imu_task(void *param);
+void algo_task(void *param);
 
-#endif /* MAIN_H */
+extern void *g_algo_event_queue;
+
+#endif /* APP_H */

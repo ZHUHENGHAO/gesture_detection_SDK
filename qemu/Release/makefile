@@ -8,8 +8,10 @@ RM := rm -rf
 
 # All of the sources participating in the build are defined here
 -include sources.mk
+-include galaxy_sdk/tasks/subdir.mk
 -include galaxy_sdk/drivers/src/subdir.mk
 -include galaxy_sdk/bsp/src/subdir.mk
+-include galaxy_sdk/algorithm/subdir.mk
 -include galaxy_sdk/subdir.mk
 -include subdir.mk
 -include objects.mk

@@ -36,7 +36,9 @@ CPP_DEPS :=
 
 # Every subdirectory with source files must be described here
 SUBDIRS := \
+galaxy_sdk/algorithm \
 galaxy_sdk/bsp/src \
 galaxy_sdk/drivers/src \
 galaxy_sdk \
+galaxy_sdk/tasks \
 

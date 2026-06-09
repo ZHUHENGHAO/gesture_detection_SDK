@@ -1,0 +1,347 @@
+GDB Server listening on: 'tcp::1234'...
+soc init done
+Board: Qemu
+Hello VeriHealthi!
+
+
+[IMU] Initialized, data-ready interrupt enabled
+
+
+qemu-system-riscv32.exe: warning: GLib-GIO: Unexpectedly, UWP app `OpenAI.Codex_26.519.5221.0_x64__2p2nqsd0c76g0' (AUMId `OpenAI.Codex_2p2nqsd0c76g0!App') supports 5 extensions but has no verbs
+qemu-system-riscv32.exe: warning: GLib-GIO: Unexpectedly, UWP app `Microsoft.OutlookForWindows_1.2026.520.0_x64__8wekyb3d8bbwe' (AUMId `Microsoft.OutlookForWindows_8wekyb3d8bbwe!Microsoft.OutlookforWindows') supports 4 extensions but has no verbs
+4500ms, pinch
+
+
+[IMU] heartbeat: samples=300, crc_bytes=4200, ret=0, frames=15
+
+
+7200ms, pinch
+
+
+10800ms, pinch
+
+
+[IMU] heartbeat: samples=600, crc_bytes=8400, ret=0, frames=15
+
+
+13800ms, pinch
+
+
+17100ms, pinch
+
+
+[IMU] heartbeat: samples=900, crc_bytes=12600, ret=0, frames=15
+
+
+21300ms, pinch
+
+
+[IMU] heartbeat: samples=1200, crc_bytes=16800, ret=0, frames=15
+
+
+28500ms, pinch
+
+
+[IMU] heartbeat: samples=1500, crc_bytes=21000, ret=0, frames=15
+
+
+32700ms, pinch
+
+
+[IMU] heartbeat: samples=1800, crc_bytes=25200, ret=0, frames=15
+
+
+37200ms, pinch
+
+
+42000ms, pinch
+
+
+[IMU] heartbeat: samples=2100, crc_bytes=29400, ret=0, frames=15
+
+
+45600ms, pinch
+
+
+[IMU] heartbeat: samples=2400, crc_bytes=33600, ret=0, frames=15
+
+
+52500ms, pinch
+
+
+[IMU] heartbeat: samples=2700, crc_bytes=37800, ret=0, frames=15
+
+
+56700ms, pinch
+
+
+[IMU] heartbeat: samples=3000, crc_bytes=42000, ret=0, frames=15
+
+
+61200ms, pinch
+
+
+65400ms, pinch
+
+
+[IMU] heartbeat: samples=3300, crc_bytes=46200, ret=0, frames=15
+
+
+69300ms, pinch
+
+
+[IMU] heartbeat: samples=3600, crc_bytes=50400, ret=0, frames=15
+
+
+75600ms, pinch
+
+
+[IMU] heartbeat: samples=3900, crc_bytes=54600, ret=0, frames=15
+
+
+79500ms, pinch
+
+
+[IMU] heartbeat: samples=4200, crc_bytes=58800, ret=0, frames=15
+
+
+85800ms, pinch
+
+
+89400ms, pinch
+
+
+[IMU] heartbeat: samples=4500, crc_bytes=63000, ret=0, frames=15
+
+
+93300ms, pinch
+
+
+[IMU] heartbeat: samples=4800, crc_bytes=67200, ret=0, frames=15
+
+
+100800ms, clench
+
+
+101100ms, clench
+
+
+101400ms, clench
+
+
+[IMU] heartbeat: samples=5100, crc_bytes=71400, ret=0, frames=15
+
+
+104400ms, pinch
+
+
+105000ms, clench
+
+
+105300ms, clench
+
+
+[IMU] heartbeat: samples=5400, crc_bytes=75600, ret=0, frames=15
+
+
+109800ms, clench
+
+
+110100ms, clench
+
+
+110400ms, clench
+
+
+[IMU] heartbeat: samples=5700, crc_bytes=79800, ret=0, frames=15
+
+
+114600ms, clench
+
+
+114900ms, clench
+
+
+119400ms, pinch
+
+
+119700ms, clench
+
+
+120000ms, clench
+
+
+[IMU] heartbeat: samples=6000, crc_bytes=84000, ret=0, frames=15
+
+
+120300ms, clench
+
+
+124200ms, pinch
+
+
+124500ms, clench
+
+
+124800ms, clench
+
+
+125100ms, clench
+
+
+[IMU] heartbeat: samples=6300, crc_bytes=88200, ret=0, frames=15
+
+
+129600ms, clench
+
+
+129900ms, clench
+
+
+130200ms, clench
+
+
+130500ms, pinch
+
+
+[IMU] heartbeat: samples=6600, crc_bytes=92400, ret=0, frames=15
+
+
+134700ms, clench
+
+
+135000ms, clench
+
+
+135300ms, clench
+
+
+[IMU] heartbeat: samples=6900, crc_bytes=96600, ret=0, frames=15
+
+
+139500ms, pinch
+
+
+139800ms, clench
+
+
+140100ms, clench
+
+
+140400ms, clench
+
+
+144000ms, pinch
+
+
+[IMU] heartbeat: samples=7200, crc_bytes=100800, ret=0, frames=15
+
+
+144300ms, clench
+
+
+144600ms, clench
+
+
+144900ms, clench
+
+
+149700ms, pinch
+
+
+150000ms, clench
+
+
+[IMU] heartbeat: samples=7500, crc_bytes=105000, ret=0, frames=15
+
+
+150300ms, clench
+
+
+150600ms, clench
+
+
+150900ms, pinch
+
+
+155700ms, clench
+
+
+156000ms, clench
+
+
+[IMU] heartbeat: samples=7800, crc_bytes=109200, ret=0, frames=15
+
+
+156300ms, clench
+
+
+161700ms, clench
+
+
+162000ms, clench
+
+
+[IMU] heartbeat: samples=8100, crc_bytes=113400, ret=0, frames=15
+
+
+162300ms, clench
+
+
+166800ms, clench
+
+
+167100ms, clench
+
+
+[IMU] heartbeat: samples=8400, crc_bytes=117600, ret=0, frames=15
+
+
+171000ms, pinch
+
+
+171300ms, clench
+
+
+171600ms, clench
+
+
+171900ms, clench
+
+
+[IMU] heartbeat: samples=8700, crc_bytes=121800, ret=0, frames=15
+
+
+175500ms, clench
+
+
+175800ms, clench
+
+
+176100ms, clench
+
+
+[IMU] heartbeat: samples=9000, crc_bytes=126000, ret=0, frames=15
+
+
+180900ms, clench
+
+
+181200ms, clench
+
+
+185100ms, clench
+
+
+185400ms, clench
+
+
+185700ms, clench
+
+
+186000ms, clench
+
+
+[IMU] heartbeat: samples=9300, crc_bytes=130200, ret=0, frames=15
+
+
