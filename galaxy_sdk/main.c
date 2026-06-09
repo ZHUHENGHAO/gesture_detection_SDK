@@ -193,8 +193,9 @@ static void task_imu_interrupt(void *param)
                                       &frame_count);
         if (ret == VSD_SUCCESS && frame_count > 0) {
             for (uint16_t i = 0; i < frame_count; i++) {
-                uart_printf("[IMU] #%u  gx=%d  gy=%d  gz=%d  ax=%d  ay=%d  az=%d\r\n",
+                uart_printf("[IMU] #%u  ts=%ld  gx=%d  gy=%d  gz=%d  ax=%d  ay=%d  az=%d\r\n",
                             (unsigned int)i,
+                            gyro_accel_data[i].sensortime,
                             (int)gyro_accel_data[i].gx,
                             (int)gyro_accel_data[i].gy,
                             (int)gyro_accel_data[i].gz,
